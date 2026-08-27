@@ -1,0 +1,31 @@
+<% if knowledge.errors.any? %>
+  <div>
+    <p>入力内容を確認してください。</p>
+    <ul>
+      <% knowledge.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: knowledge do |form| %>
+  <div>
+    <%= form.label :title, "タイトル" %>
+    <%= form.text_field :title %>
+  </div>
+
+  <div>
+    <%= form.label :category, "カテゴリ" %>
+    <%= form.text_field :category %>
+  </div>
+
+  <div>
+    <%= form.label :content, "本文" %>
+    <%= form.text_area :content %>
+  </div>
+
+  <div>
+    <%= form.submit submit_label %>
+  </div>
+<% end %>

@@ -30,6 +30,7 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "VPNへの接続方法"
     assert_select "p", text: "カテゴリ: IT"
     assert_select "p", text: "VPNクライアントを起動し、社員アカウントでログインしてください。"
+    assert_select "a[href='#{edit_knowledge_path(knowledge)}']", "編集"
     assert_select "a[href='#{knowledges_path}']", "一覧へ戻る"
   end
 
@@ -85,5 +86,77 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
     assert_select "li", text: "Title can't be blank"
     assert_select "li", text: "Content can't be blank"
     assert_select "li", text: "Category can't be blank"
+  end
+
+  test "should get edit" do
+    knowledge = Knowledge.create!(
+      title: "経費精算の方法",
+      content: "経費精算はシステムから申請してください。",
+      category: "経費"
+    )
+
+    get edit_knowledge_url(knowledge)
+
+    assert_response :success
+    assert_select "h1", "ナレッジ編集"
+    assert_select "form[action='#{knowledge_path(knowledge)}'][method='post']"
+    assert_select "input[name='knowledge[title]'][value='経費精算の方法']"
+    assert_select "input[name='knowledge[category]'][value='経費']"
+    assert_select "textarea[name='knowledge[content]']", "経費精算はシステムから申請してください。"
+  end
+
+  test "should update knowledge" do
+    knowledge = Knowledge.create!(
+      title: "経費精算の方法",
+      content: "経費精算はシステムから申請してください。",
+      category: "経費"
+    )
+
+    patch knowledge_url(knowledge), params: {
+      knowledge: {
+        title: "経費精算の申請方法",
+        content: "経費精算は経費精算システムから申請してください。",
+        category: "経費・会計"
+      }
+    }
+
+    assert_redirected_to knowledge_url(knowledge)
+    knowledge.reload
+    assert_equal "経費精算の申請方法", knowledge.title
+    assert_equal "経費精算は経費精算システムから申請してください。", knowledge.content
+    assert_equal "経費・会計", knowledge.category
+
+    follow_redirect!
+    assert_response :success
+    assert_select "p", text: "ナレッジを更新しました。"
+    assert_select "h1", "経費精算の申請方法"
+  end
+
+  test "should render edit with errors when update validation fails" do
+    knowledge = Knowledge.create!(
+      title: "経費精算の方法",
+      content: "経費精算はシステムから申請してください。",
+      category: "経費"
+    )
+
+    patch knowledge_url(knowledge), params: {
+      knowledge: {
+        title: "",
+        content: "",
+        category: ""
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert_select "h1", "ナレッジ編集"
+    assert_select "p", text: "入力内容を確認してください。"
+    assert_select "li", text: "Title can't be blank"
+    assert_select "li", text: "Content can't be blank"
+    assert_select "li", text: "Category can't be blank"
+
+    knowledge.reload
+    assert_equal "経費精算の方法", knowledge.title
+    assert_equal "経費精算はシステムから申請してください。", knowledge.content
+    assert_equal "経費", knowledge.category
   end
 end

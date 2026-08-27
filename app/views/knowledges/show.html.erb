@@ -1,7 +1,12 @@
 <h1><%= @knowledge.title %></h1>
 
+<% if notice.present? %>
+  <p><%= notice %></p>
+<% end %>
+
 <p>カテゴリ: <%= @knowledge.category %></p>
 
 <p><%= @knowledge.content %></p>
 
+<p><%= link_to "編集", edit_knowledge_path(@knowledge) %></p>
 <p><%= link_to "一覧へ戻る", knowledges_path %></p>
