@@ -13,7 +13,16 @@
 
 <% if @question.blank? %>
   <p>質問を入力してください。</p>
-<% elsif @knowledges.any? %>
+<% else %>
+  <% if @ai_answer_result&.success? %>
+    <h2>AI回答</h2>
+    <p><%= @ai_answer_result.answer %></p>
+  <% elsif @ai_answer_result.present? %>
+    <p><%= @ai_answer_result.error_message %></p>
+  <% end %>
+<% end %>
+
+<% if @knowledges.any? %>
   <h2>関連するナレッジ</h2>
 
   <ul>
@@ -25,7 +34,7 @@
       </li>
     <% end %>
   </ul>
-<% else %>
+<% elsif @question.present? %>
   <p>関連するナレッジは見つかりませんでした。</p>
 <% end %>
 
