@@ -24,6 +24,24 @@
   </head>
 
   <body>
-    <%= yield %>
+    <header class="app-header">
+      <div class="app-header__inner">
+        <%= link_to "Internal Knowledge", questions_path, class: "app-logo" %>
+
+        <nav class="app-nav" aria-label="Main navigation">
+          <%= link_to "AIに質問", new_question_path %>
+          <%= link_to "ナレッジ一覧", knowledges_path %>
+          <%= link_to "ナレッジ登録", new_knowledge_path %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <% flash.each do |_type, message| %>
+        <p class="flash-message"><%= message %></p>
+      <% end %>
+
+      <%= yield %>
+    </main>
   </body>
 </html>

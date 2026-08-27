@@ -1,29 +1,37 @@
-<h1>社内ナレッジ一覧</h1>
-
-<% if notice.present? %>
-  <p><%= notice %></p>
-<% end %>
-
-<p><%= link_to "新規登録", new_knowledge_path %></p>
-
-<%= form_with url: knowledges_path, method: :get do |form| %>
+<section class="page-header">
   <div>
-    <%= form.label :q, "検索" %>
-    <%= form.search_field :q, value: @query %>
-    <%= form.submit "検索" %>
+    <h1>社内ナレッジ一覧</h1>
+    <p class="page-lead">社内マニュアル、FAQ、業務ルールをまとめて確認できます。</p>
   </div>
-<% end %>
+
+  <%= link_to "+ 新しいナレッジ", new_knowledge_path, class: "button button-primary" %>
+</section>
+
+<section class="toolbar">
+  <%= form_with url: knowledges_path, method: :get, class: "search-form" do |form| %>
+    <div class="form-group search-form__field">
+      <%= form.label :q, "検索" %>
+      <%= form.search_field :q, value: @query, placeholder: "タイトル、本文、カテゴリで検索" %>
+    </div>
+    <%= form.submit "検索", class: "button button-secondary" %>
+  <% end %>
+</section>
 
 <% if @knowledges.any? %>
-  <ul>
+  <div class="knowledge-grid">
     <% @knowledges.each do |knowledge| %>
-      <li>
+      <article class="knowledge-card">
+        <p class="badge">カテゴリ: <%= knowledge.category %></p>
         <h2><%= link_to knowledge.title, knowledge_path(knowledge) %></h2>
-        <p>カテゴリ: <%= knowledge.category %></p>
-        <p><%= knowledge.content %></p>
-      </li>
+        <p class="knowledge-card__content"><%= truncate(knowledge.content, length: 160) %></p>
+        <%= link_to "詳細を見る", knowledge_path(knowledge), class: "card-link" %>
+      </article>
     <% end %>
-  </ul>
+  </div>
 <% else %>
-  <p>登録されているナレッジはありません。</p>
+  <section class="empty-state">
+    <h2>ナレッジが見つかりません</h2>
+    <p>登録されているナレッジはありません。</p>
+    <%= link_to "+ 新しいナレッジ", new_knowledge_path, class: "button button-primary" %>
+  </section>
 <% end %>

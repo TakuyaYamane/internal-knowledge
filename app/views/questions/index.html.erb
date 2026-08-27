@@ -1,41 +1,63 @@
-<h1>質問結果</h1>
+<section class="page-header page-header--stacked">
+  <h1>質問結果</h1>
+  <p class="page-lead">質問、AI回答、参照したナレッジの順に確認できます。</p>
+</section>
 
-<%= form_with url: questions_path, method: :get do |form| %>
-  <div>
-    <%= form.label :question, "質問" %>
-    <%= form.text_area :question, value: @question %>
-  </div>
+<section class="question-summary">
+  <h2>質問</h2>
+  <%= form_with url: questions_path, method: :get, class: "question-form question-form--compact" do |form| %>
+    <div class="form-group">
+      <%= form.label :question, "質問" %>
+      <%= form.text_area :question, value: @question, rows: 4 %>
+    </div>
 
-  <div>
-    <%= form.submit "質問する" %>
-  </div>
-<% end %>
+    <div class="form-actions">
+      <%= form.submit "質問する", class: "button button-primary" %>
+    </div>
+  <% end %>
+</section>
 
 <% if @question.blank? %>
-  <p>質問を入力してください。</p>
+  <section class="empty-state">
+    <h2>質問が未入力です</h2>
+    <p>質問を入力してください。</p>
+  </section>
 <% else %>
   <% if @ai_answer_result&.success? %>
-    <h2>AI回答</h2>
-    <p><%= @ai_answer_result.answer %></p>
+    <section class="answer-card">
+      <h2>AI回答</h2>
+      <p><%= @ai_answer_result.answer %></p>
+    </section>
   <% elsif @ai_answer_result.present? %>
-    <p><%= @ai_answer_result.error_message %></p>
+    <section class="notice-card">
+      <p><%= @ai_answer_result.error_message %></p>
+    </section>
   <% end %>
 <% end %>
 
 <% if @knowledges.any? %>
-  <h2>関連するナレッジ</h2>
+  <section class="section-block">
+    <h2>関連するナレッジ</h2>
+    <p class="section-lead">AI回答が参照した社内ナレッジです。</p>
 
-  <ul>
-    <% @knowledges.each do |knowledge| %>
-      <li>
-        <h3><%= link_to knowledge.title, knowledge_path(knowledge) %></h3>
-        <p>カテゴリ: <%= knowledge.category %></p>
-        <p><%= knowledge.content %></p>
-      </li>
-    <% end %>
-  </ul>
+    <div class="knowledge-grid">
+      <% @knowledges.each do |knowledge| %>
+        <article class="knowledge-card">
+          <p class="badge">カテゴリ: <%= knowledge.category %></p>
+          <h3><%= link_to knowledge.title, knowledge_path(knowledge) %></h3>
+          <p class="knowledge-card__content"><%= truncate(knowledge.content, length: 160) %></p>
+          <%= link_to "詳細を見る", knowledge_path(knowledge), class: "card-link" %>
+        </article>
+      <% end %>
+    </div>
+  </section>
 <% elsif @question.present? %>
-  <p>関連するナレッジは見つかりませんでした。</p>
+  <section class="empty-state">
+    <h2>参照ナレッジなし</h2>
+    <p>関連するナレッジは見つかりませんでした。</p>
+  </section>
 <% end %>
 
-<p><%= link_to "ナレッジ一覧へ", knowledges_path %></p>
+<div class="action-bar">
+  <%= link_to "ナレッジ一覧へ", knowledges_path, class: "button button-secondary" %>
+</div>

@@ -1,5 +1,10 @@
-<h1>ナレッジ編集</h1>
+<section class="page-header page-header--stacked">
+  <h1>ナレッジ編集</h1>
+  <p class="page-lead">本文を変更すると、RAG検索用のChunkとEmbeddingも更新されます。</p>
+</section>
 
 <%= render "form", knowledge: @knowledge, submit_label: "更新する" %>
 
-<p><%= link_to "詳細へ戻る", knowledge_path(@knowledge) %></p>
+<div class="action-bar">
+  <%= link_to "詳細へ戻る", knowledge_path(@knowledge), class: "button button-secondary" %>
+</div>

@@ -1,17 +1,18 @@
-<h1><%= @knowledge.title %></h1>
+<section class="page-header page-header--stacked">
+  <p class="badge">カテゴリ: <%= @knowledge.category %></p>
+  <h1><%= @knowledge.title %></h1>
+</section>
 
-<% if notice.present? %>
-  <p><%= notice %></p>
-<% end %>
+<article class="content-card">
+  <p class="knowledge-body"><%= simple_format(@knowledge.content) %></p>
+</article>
 
-<p>カテゴリ: <%= @knowledge.category %></p>
-
-<p><%= @knowledge.content %></p>
-
-<p><%= link_to "編集", edit_knowledge_path(@knowledge) %></p>
-<p>
+<div class="action-bar">
+  <%= link_to "一覧へ戻る", knowledges_path, class: "button button-secondary" %>
+  <%= link_to "編集", edit_knowledge_path(@knowledge), class: "button button-primary" %>
   <%= button_to "削除", knowledge_path(@knowledge),
         method: :delete,
+        class: "button button-danger",
+        form: { class: "inline-form" },
         data: { turbo_confirm: "このナレッジを削除しますか？" } %>
-</p>
-<p><%= link_to "一覧へ戻る", knowledges_path %></p>
+</div>

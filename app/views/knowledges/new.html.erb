@@ -1,5 +1,10 @@
-<h1>ナレッジ新規登録</h1>
+<section class="page-header page-header--stacked">
+  <h1>ナレッジ新規登録</h1>
+  <p class="page-lead">検索とAI回答の根拠になる社内ナレッジを登録します。</p>
+</section>
 
 <%= render "form", knowledge: @knowledge, submit_label: "登録する" %>
 
-<p><%= link_to "一覧へ戻る", knowledges_path %></p>
+<div class="action-bar">
+  <%= link_to "一覧へ戻る", knowledges_path, class: "button button-secondary" %>
+</div>
