@@ -3,6 +3,10 @@ class KnowledgesController < ApplicationController
     @knowledges = Knowledge.order(created_at: :desc)
   end
 
+  def show
+    @knowledge = Knowledge.find(params[:id])
+  end
+
   def new
     @knowledge = Knowledge.new
   end

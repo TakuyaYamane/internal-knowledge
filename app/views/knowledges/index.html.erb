@@ -10,7 +10,7 @@
   <ul>
     <% @knowledges.each do |knowledge| %>
       <li>
-        <h2><%= knowledge.title %></h2>
+        <h2><%= link_to knowledge.title, knowledge_path(knowledge) %></h2>
         <p>カテゴリ: <%= knowledge.category %></p>
         <p><%= knowledge.content %></p>
       </li>

@@ -12,9 +12,31 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "社内ナレッジ一覧"
-    assert_select "h2", "経費精算の方法"
+    assert_select "h2 a[href='#{knowledge_path(Knowledge.last)}']", "経費精算の方法"
     assert_select "p", text: "カテゴリ: 経費"
     assert_select "p", text: "経費精算はシステムから申請してください。"
+  end
+
+  test "should show knowledge" do
+    knowledge = Knowledge.create!(
+      title: "VPNへの接続方法",
+      content: "VPNクライアントを起動し、社員アカウントでログインしてください。",
+      category: "IT"
+    )
+
+    get knowledge_url(knowledge)
+
+    assert_response :success
+    assert_select "h1", "VPNへの接続方法"
+    assert_select "p", text: "カテゴリ: IT"
+    assert_select "p", text: "VPNクライアントを起動し、社員アカウントでログインしてください。"
+    assert_select "a[href='#{knowledges_path}']", "一覧へ戻る"
+  end
+
+  test "should return not found for missing knowledge" do
+    get knowledge_url(id: 999_999)
+
+    assert_response :not_found
   end
 
   test "should get new" do
