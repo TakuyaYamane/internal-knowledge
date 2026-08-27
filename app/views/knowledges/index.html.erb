@@ -1,5 +1,11 @@
 <h1>社内ナレッジ一覧</h1>
 
+<% if notice.present? %>
+  <p><%= notice %></p>
+<% end %>
+
+<p><%= link_to "新規登録", new_knowledge_path %></p>
+
 <% if @knowledges.any? %>
   <ul>
     <% @knowledges.each do |knowledge| %>
