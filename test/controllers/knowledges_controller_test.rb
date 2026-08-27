@@ -31,6 +31,8 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", text: "カテゴリ: IT"
     assert_select "p", text: "VPNクライアントを起動し、社員アカウントでログインしてください。"
     assert_select "a[href='#{edit_knowledge_path(knowledge)}']", "編集"
+    assert_select "form[action='#{knowledge_path(knowledge)}'][method='post']"
+    assert_select "button", "削除"
     assert_select "a[href='#{knowledges_path}']", "一覧へ戻る"
   end
 
@@ -158,5 +160,25 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "経費精算の方法", knowledge.title
     assert_equal "経費精算はシステムから申請してください。", knowledge.content
     assert_equal "経費", knowledge.category
+  end
+
+  test "should destroy knowledge and redirect to index" do
+    knowledge = Knowledge.create!(
+      title: "VPNへの接続方法",
+      content: "VPNクライアントを起動し、社員アカウントでログインしてください。",
+      category: "IT"
+    )
+
+    assert_difference("Knowledge.count", -1) do
+      delete knowledge_url(knowledge)
+    end
+
+    assert_redirected_to knowledges_url
+    assert_not Knowledge.exists?(knowledge.id)
+
+    follow_redirect!
+    assert_response :success
+    assert_select "p", text: "ナレッジを削除しました。"
+    assert_select "h2", text: "VPNへの接続方法", count: 0
   end
 end

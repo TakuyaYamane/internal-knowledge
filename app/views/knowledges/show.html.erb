@@ -9,4 +9,9 @@
 <p><%= @knowledge.content %></p>
 
 <p><%= link_to "編集", edit_knowledge_path(@knowledge) %></p>
+<p>
+  <%= button_to "削除", knowledge_path(@knowledge),
+        method: :delete,
+        data: { turbo_confirm: "このナレッジを削除しますか？" } %>
+</p>
 <p><%= link_to "一覧へ戻る", knowledges_path %></p>

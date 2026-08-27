@@ -35,6 +35,13 @@ class KnowledgesController < ApplicationController
     end
   end
 
+  def destroy
+    @knowledge = Knowledge.find(params[:id])
+    @knowledge.destroy
+
+    redirect_to knowledges_path, notice: "ナレッジを削除しました。"
+  end
+
   private
 
   def knowledge_params
