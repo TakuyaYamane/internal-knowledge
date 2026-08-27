@@ -1,0 +1,32 @@
+<h1>質問結果</h1>
+
+<%= form_with url: questions_path, method: :get do |form| %>
+  <div>
+    <%= form.label :question, "質問" %>
+    <%= form.text_area :question, value: @question %>
+  </div>
+
+  <div>
+    <%= form.submit "質問する" %>
+  </div>
+<% end %>
+
+<% if @question.blank? %>
+  <p>質問を入力してください。</p>
+<% elsif @knowledges.any? %>
+  <h2>関連するナレッジ</h2>
+
+  <ul>
+    <% @knowledges.each do |knowledge| %>
+      <li>
+        <h3><%= link_to knowledge.title, knowledge_path(knowledge) %></h3>
+        <p>カテゴリ: <%= knowledge.category %></p>
+        <p><%= knowledge.content %></p>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>関連するナレッジは見つかりませんでした。</p>
+<% end %>
+
+<p><%= link_to "ナレッジ一覧へ", knowledges_path %></p>
