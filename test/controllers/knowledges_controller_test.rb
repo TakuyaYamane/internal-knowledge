@@ -115,7 +115,32 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should create knowledge" do
-    assert_difference("Knowledge.count", 1) do
+    with_knowledge_embedding_sync(true) do
+      assert_difference("Knowledge.count", 1) do
+        post knowledges_url, params: {
+          knowledge: {
+            title: "VPNへの接続方法",
+            content: "VPNクライアントを起動し、社員アカウントでログインしてください。",
+            category: "IT"
+          }
+        }
+      end
+    end
+
+    assert_redirected_to knowledges_url
+    follow_redirect!
+    assert_response :success
+    assert_select "p", text: "ナレッジを登録しました。"
+    assert_select "h2", "VPNへの接続方法"
+  end
+
+  test "should sync chunks and embeddings when creating knowledge" do
+    synced_knowledge_ids = []
+
+    with_knowledge_embedding_sync(->(knowledge) {
+      synced_knowledge_ids << knowledge.id
+      true
+    }) do
       post knowledges_url, params: {
         knowledge: {
           title: "VPNへの接続方法",
@@ -126,10 +151,23 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to knowledges_url
-    follow_redirect!
-    assert_response :success
-    assert_select "p", text: "ナレッジを登録しました。"
-    assert_select "h2", "VPNへの接続方法"
+    assert_equal [ Knowledge.last.id ], synced_knowledge_ids
+  end
+
+  test "should keep create success when embedding sync fails" do
+    with_knowledge_embedding_sync(false) do
+      assert_difference("Knowledge.count", 1) do
+        post knowledges_url, params: {
+          knowledge: {
+            title: "VPNへの接続方法",
+            content: "VPNクライアントを起動してください。",
+            category: "IT"
+          }
+        }
+      end
+    end
+
+    assert_redirected_to knowledges_url
   end
 
   test "should render new with errors when validation fails" do
@@ -175,13 +213,15 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
       category: "経費"
     )
 
-    patch knowledge_url(knowledge), params: {
-      knowledge: {
-        title: "経費精算の申請方法",
-        content: "経費精算は経費精算システムから申請してください。",
-        category: "経費・会計"
+    with_knowledge_embedding_sync(true) do
+      patch knowledge_url(knowledge), params: {
+        knowledge: {
+          title: "経費精算の申請方法",
+          content: "経費精算は経費精算システムから申請してください。",
+          category: "経費・会計"
+        }
       }
-    }
+    end
 
     assert_redirected_to knowledge_url(knowledge)
     knowledge.reload
@@ -193,6 +233,56 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "p", text: "ナレッジを更新しました。"
     assert_select "h1", "経費精算の申請方法"
+  end
+
+  test "should resync chunks and embeddings when content changes" do
+    knowledge = Knowledge.create!(
+      title: "経費精算の方法",
+      content: "経費精算はシステムから申請してください。",
+      category: "経費"
+    )
+    synced_knowledge_ids = []
+
+    with_knowledge_embedding_sync(->(synced_knowledge) {
+      synced_knowledge_ids << synced_knowledge.id
+      true
+    }) do
+      patch knowledge_url(knowledge), params: {
+        knowledge: {
+          title: "経費精算の方法",
+          content: "経費精算は経費精算システムから申請してください。",
+          category: "経費"
+        }
+      }
+    end
+
+    assert_redirected_to knowledge_url(knowledge)
+    assert_equal [ knowledge.id ], synced_knowledge_ids
+  end
+
+  test "should not resync when only title changes" do
+    knowledge = Knowledge.create!(
+      title: "経費精算の方法",
+      content: "経費精算はシステムから申請してください。",
+      category: "経費"
+    )
+    synced_knowledge_ids = []
+
+    with_knowledge_embedding_sync(->(synced_knowledge) {
+      synced_knowledge_ids << synced_knowledge.id
+      true
+    }) do
+      patch knowledge_url(knowledge), params: {
+        knowledge: {
+          title: "経費精算の申請方法",
+          content: "経費精算はシステムから申請してください。",
+          category: "経費"
+        }
+      }
+    end
+
+    assert_redirected_to knowledge_url(knowledge)
+    assert_empty synced_knowledge_ids
   end
 
   test "should render edit with errors when update validation fails" do
@@ -229,9 +319,16 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
       content: "VPNクライアントを起動し、社員アカウントでログインしてください。",
       category: "IT"
     )
+    KnowledgeChunk.create!(
+      knowledge: knowledge,
+      content: "VPNクライアントを起動してください。",
+      position: 0
+    )
 
     assert_difference("Knowledge.count", -1) do
-      delete knowledge_url(knowledge)
+      assert_difference("KnowledgeChunk.count", -1) do
+        delete knowledge_url(knowledge)
+      end
     end
 
     assert_redirected_to knowledges_url
@@ -241,5 +338,19 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "p", text: "ナレッジを削除しました。"
     assert_select "h2", text: "VPNへの接続方法", count: 0
+  end
+
+  private
+
+  def with_knowledge_embedding_sync(result)
+    original = KnowledgeEmbeddingSync.method(:call)
+
+    KnowledgeEmbeddingSync.define_singleton_method(:call) do |knowledge|
+      result.respond_to?(:call) ? result.call(knowledge) : result
+    end
+
+    yield
+  ensure
+    KnowledgeEmbeddingSync.define_singleton_method(:call, original)
   end
 end

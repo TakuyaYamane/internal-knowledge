@@ -20,6 +20,7 @@ class KnowledgesController < ApplicationController
     @knowledge = Knowledge.new(knowledge_params)
 
     if @knowledge.save
+      sync_knowledge_embedding(@knowledge)
       redirect_to knowledges_path, notice: "ナレッジを登録しました。"
     else
       render :new, status: :unprocessable_entity
@@ -30,6 +31,7 @@ class KnowledgesController < ApplicationController
     @knowledge = Knowledge.find(params[:id])
 
     if @knowledge.update(knowledge_params)
+      sync_knowledge_embedding(@knowledge) if @knowledge.saved_change_to_content?
       redirect_to knowledge_path(@knowledge), notice: "ナレッジを更新しました。"
     else
       render :edit, status: :unprocessable_entity
@@ -47,5 +49,9 @@ class KnowledgesController < ApplicationController
 
   def knowledge_params
     params.require(:knowledge).permit(:title, :content, :category)
+  end
+
+  def sync_knowledge_embedding(knowledge)
+    KnowledgeEmbeddingSync.call(knowledge)
   end
 end
