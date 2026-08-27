@@ -17,8 +17,13 @@ class QuestionsControllerTest < ActionDispatch::IntegrationTest
       content: "社外から社内システムにアクセスする場合はVPNを利用してください。",
       category: "IT"
     )
+    chunk = create_chunk(knowledge, content: "社外から社内システムにアクセスする場合はVPNを利用してください。")
 
-    get questions_url(question: "VPN")
+    with_knowledge_retriever([ retrieval_result(chunk) ]) do
+      with_ai_answer_generator(ai_answer("VPNを利用してください。")) do
+        get questions_url(question: "VPN")
+      end
+    end
 
     assert_response :success
     assert_select "h1", "質問結果"
@@ -29,23 +34,45 @@ class QuestionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should display ai answer when matching knowledges exist" do
-    Knowledge.create!(
+    knowledge = Knowledge.create!(
       title: "VPNへの接続方法",
       content: "社外から社内システムにアクセスする場合はVPNを利用してください。",
       category: "IT"
     )
-    result = AiAnswerGenerator::Result.new(
-      answer: "VPNを利用してください。",
-      error_message: nil
-    )
+    chunk = create_chunk(knowledge, content: "VPNを利用してください。")
 
-    with_ai_answer_generator(result) do
-      get questions_url(question: "VPN")
+    with_knowledge_retriever([ retrieval_result(chunk) ]) do
+      with_ai_answer_generator(ai_answer("VPNを利用してください。")) do
+        get questions_url(question: "VPN")
+      end
     end
 
     assert_response :success
     assert_select "h2", "AI回答"
     assert_select "p", text: "VPNを利用してください。"
+  end
+
+  test "should use rag result for natural language question" do
+    knowledge = Knowledge.create!(
+      title: "VPNへの接続方法",
+      content: "社外から社内システムにアクセスする場合はVPNを利用してください。",
+      category: "IT"
+    )
+    chunk = create_chunk(knowledge, content: "社外から社内システムにアクセスする場合はVPNを利用してください。")
+    captured_question = nil
+
+    with_knowledge_retriever(->(question) {
+      captured_question = question
+      [ retrieval_result(chunk, distance: 0.4029) ]
+    }) do
+      with_ai_answer_generator(ai_answer("VPNを利用してください。")) do
+        get questions_url(question: "社外から会社のシステムに入りたい")
+      end
+    end
+
+    assert_response :success
+    assert_equal "社外から会社のシステムに入りたい", captured_question
+    assert_select "h3 a[href='#{knowledge_path(knowledge)}']", "VPNへの接続方法"
   end
 
   test "should not display unmatched knowledges" do
@@ -55,7 +82,9 @@ class QuestionsControllerTest < ActionDispatch::IntegrationTest
       category: "経費"
     )
 
-    get questions_url(question: "VPN")
+    with_knowledge_retriever([]) do
+      get questions_url(question: "VPN")
+    end
 
     assert_response :success
     assert_select "h3", text: "経費精算の方法", count: 0
@@ -69,8 +98,10 @@ class QuestionsControllerTest < ActionDispatch::IntegrationTest
       category: "経費"
     )
 
-    with_ai_answer_generator(->(*) { raise "should not be called" }) do
-      get questions_url(question: "VPN")
+    with_knowledge_retriever([]) do
+      with_ai_answer_generator(->(*) { raise "should not be called" }) do
+        get questions_url(question: "VPN")
+      end
     end
 
     assert_response :success
@@ -83,18 +114,77 @@ class QuestionsControllerTest < ActionDispatch::IntegrationTest
       content: "社外から社内システムにアクセスする場合はVPNを利用してください。",
       category: "IT"
     )
+    chunk = create_chunk(knowledge)
     result = AiAnswerGenerator::Result.new(
       answer: nil,
       error_message: "AI回答の生成に失敗しました。関連ナレッジを確認してください。"
     )
 
-    with_ai_answer_generator(result) do
-      get questions_url(question: "VPN")
+    with_knowledge_retriever([ retrieval_result(chunk) ]) do
+      with_ai_answer_generator(result) do
+        get questions_url(question: "VPN")
+      end
     end
 
     assert_response :success
     assert_select "p", text: "AI回答の生成に失敗しました。関連ナレッジを確認してください。"
     assert_select "h3 a[href='#{knowledge_path(knowledge)}']", "VPNへの接続方法"
+  end
+
+  test "should not duplicate same knowledge from multiple chunks" do
+    knowledge = Knowledge.create!(
+      title: "VPNへの接続方法",
+      content: "社外から社内システムにアクセスする場合はVPNを利用してください。",
+      category: "IT"
+    )
+    first_chunk = create_chunk(knowledge, content: "社外から利用する場合はVPNを使います。", position: 0)
+    second_chunk = create_chunk(knowledge, content: "VPNクライアントでログインします。", position: 1)
+
+    with_knowledge_retriever([ retrieval_result(first_chunk), retrieval_result(second_chunk) ]) do
+      with_ai_answer_generator(ai_answer("VPNを利用してください。")) do
+        get questions_url(question: "社外から会社のシステムに入りたい")
+      end
+    end
+
+    assert_response :success
+    assert_select "h3 a[href='#{knowledge_path(knowledge)}']", count: 1
+    assert_select "h3 a[href='#{knowledge_path(knowledge)}']", "VPNへの接続方法"
+  end
+
+  test "should pass chunk contexts to ai answer generator" do
+    knowledge = Knowledge.create!(
+      title: "VPNへの接続方法",
+      content: "Knowledge全体本文です。",
+      category: "IT"
+    )
+    chunk = create_chunk(knowledge, content: "Chunk本文です。")
+    captured_contexts = nil
+
+    with_knowledge_retriever([ retrieval_result(chunk) ]) do
+      with_ai_answer_generator(->(**arguments) {
+        captured_contexts = arguments[:knowledges]
+        ai_answer("Chunkを根拠に回答します。")
+      }) do
+        get questions_url(question: "社外から会社のシステムに入りたい")
+      end
+    end
+
+    assert_response :success
+    assert_equal "VPNへの接続方法", captured_contexts.first.title
+    assert_equal "IT", captured_contexts.first.category
+    assert_equal "Chunk本文です。", captured_contexts.first.content
+  end
+
+  test "should handle retriever failure safely" do
+    with_knowledge_retriever(->(*) { raise "retriever error" }) do
+      with_ai_answer_generator(->(*) { raise "should not be called" }) do
+        get questions_url(question: "社外から会社のシステムに入りたい")
+      end
+    end
+
+    assert_response :success
+    assert_select "p", text: "関連するナレッジが見つからなかったため、AI回答は生成しませんでした"
+    assert_select "p", text: "関連するナレッジは見つかりませんでした。"
   end
 
   test "should handle blank question" do
@@ -112,6 +202,34 @@ class QuestionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def create_chunk(knowledge, content: "社外から社内システムにアクセスする場合はVPNを利用してください。", position: 0)
+    KnowledgeChunk.create!(
+      knowledge: knowledge,
+      content: content,
+      position: position
+    )
+  end
+
+  def retrieval_result(chunk, distance: 0.12)
+    KnowledgeRetriever::Result.new(chunk: chunk, distance: distance)
+  end
+
+  def ai_answer(answer)
+    AiAnswerGenerator::Result.new(answer: answer, error_message: nil)
+  end
+
+  def with_knowledge_retriever(result)
+    original = KnowledgeRetriever.method(:call)
+
+    KnowledgeRetriever.define_singleton_method(:call) do |question|
+      result.respond_to?(:call) ? result.call(question) : result
+    end
+
+    yield
+  ensure
+    KnowledgeRetriever.define_singleton_method(:call, original)
+  end
 
   def with_ai_answer_generator(result)
     original = AiAnswerGenerator.method(:call)
