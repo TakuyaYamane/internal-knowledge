@@ -10,9 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_27_152708) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_195814) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "vector"
+
+  create_table "knowledge_chunks", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.vector "embedding", limit: 1536
+    t.string "embedding_model"
+    t.bigint "knowledge_id", null: false
+    t.integer "position", null: false
+    t.datetime "updated_at", null: false
+    t.index ["knowledge_id"], name: "index_knowledge_chunks_on_knowledge_id"
+  end
 
   create_table "knowledges", force: :cascade do |t|
     t.string "category", null: false
@@ -21,4 +33,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_152708) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
   end
+
+  add_foreign_key "knowledge_chunks", "knowledges"
 end
