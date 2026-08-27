@@ -1,0 +1,15 @@
+<h1>社内ナレッジ一覧</h1>
+
+<% if @knowledges.any? %>
+  <ul>
+    <% @knowledges.each do |knowledge| %>
+      <li>
+        <h2><%= knowledge.title %></h2>
+        <p>カテゴリ: <%= knowledge.category %></p>
+        <p><%= knowledge.content %></p>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>登録されているナレッジはありません。</p>
+<% end %>
