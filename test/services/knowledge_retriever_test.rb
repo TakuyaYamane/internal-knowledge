@@ -62,6 +62,27 @@ class KnowledgeRetrieverTest < ActiveSupport::TestCase
     assert results.all? { |result| result.distance <= 0.2 }
   end
 
+  test "includes chunks within default threshold above previous threshold" do
+    related_chunk = create_knowledge_chunk(embedding: embedding_for(1.0, 1.64), content: "在宅勤務の説明")
+
+    results = with_embedding_generator(embedding_for(1.0, 0.0)) do
+      KnowledgeRetriever.call("家で仕事をしたい場合、どう申請すればいいですか？")
+    end
+
+    assert_includes results.map(&:chunk), related_chunk
+    assert results.any? { |result| result.chunk == related_chunk && result.distance > 0.45 && result.distance <= 0.50 }
+  end
+
+  test "excludes chunks above default threshold" do
+    create_knowledge_chunk(embedding: embedding_for(1.0, 1.75), content: "遠すぎるChunk")
+
+    results = with_embedding_generator(embedding_for(1.0, 0.0)) do
+      KnowledgeRetriever.call("家で仕事をしたい場合、どう申請すればいいですか？")
+    end
+
+    assert_empty results
+  end
+
   test "returns empty results when embedding generation fails" do
     create_knowledge_chunk(embedding: embedding_for(1.0, 0.0), content: "VPNの説明")
 
