@@ -77,6 +77,34 @@ class KnowledgeTest < ActiveSupport::TestCase
     assert_equal [ matching ], Knowledge.search("休暇")
   end
 
+  test "search by single word still matches" do
+    matching = create_knowledge(title: "VPNへの接続方法")
+    create_knowledge(title: "経費精算の方法")
+
+    assert_equal [ matching ], Knowledge.search("VPN")
+  end
+
+  test "search by natural language question about vpn" do
+    matching = create_knowledge(title: "VPNへの接続方法")
+    create_knowledge(title: "経費精算の方法")
+
+    assert_equal [ matching ], Knowledge.search("VPNへの接続方法を教えてください")
+  end
+
+  test "search by natural language question about expense reimbursement" do
+    matching = create_knowledge(title: "経費精算の方法")
+    create_knowledge(title: "VPNへの接続方法")
+
+    assert_equal [ matching ], Knowledge.search("経費精算の方法を教えて")
+  end
+
+  test "search matches when only one of multiple terms matches" do
+    matching = create_knowledge(title: "VPNへの接続方法")
+    create_knowledge(title: "経費精算の方法")
+
+    assert_equal [ matching ], Knowledge.search("存在しない語 VPN")
+  end
+
   test "search with blank query returns all knowledges" do
     older = create_knowledge(title: "経費精算の方法", created_at: 2.days.ago)
     newer = create_knowledge(title: "VPNへの接続方法", created_at: 1.day.ago)
@@ -88,6 +116,12 @@ class KnowledgeTest < ActiveSupport::TestCase
     create_knowledge(title: "経費精算の方法")
 
     assert_empty Knowledge.search("該当なし")
+  end
+
+  test "search with meaningless short words returns none safely" do
+    create_knowledge(title: "経費精算の方法")
+
+    assert_empty Knowledge.search("の を は")
   end
 
   test "search escapes like wildcards" do
