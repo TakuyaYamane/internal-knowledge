@@ -17,6 +17,67 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", text: "経費精算はシステムから申請してください。"
   end
 
+  test "index displays search form" do
+    get knowledges_url
+
+    assert_response :success
+    assert_select "form[action='#{knowledges_path}'][method='get']"
+    assert_select "input[name='q']"
+    assert_select "input[type='submit'][value='検索']"
+  end
+
+  test "index displays search results" do
+    knowledge = Knowledge.create!(
+      title: "経費精算の方法",
+      content: "経費精算はシステムから申請してください。",
+      category: "経費"
+    )
+
+    get knowledges_url(q: "経費")
+
+    assert_response :success
+    assert_select "input[name='q'][value='経費']"
+    assert_select "h2 a[href='#{knowledge_path(knowledge)}']", "経費精算の方法"
+  end
+
+  test "index does not display unmatched search results" do
+    Knowledge.create!(
+      title: "経費精算の方法",
+      content: "経費精算はシステムから申請してください。",
+      category: "経費"
+    )
+    Knowledge.create!(
+      title: "VPNへの接続方法",
+      content: "VPNクライアントを起動してください。",
+      category: "IT"
+    )
+
+    get knowledges_url(q: "経費")
+
+    assert_response :success
+    assert_select "h2", text: "経費精算の方法"
+    assert_select "h2", text: "VPNへの接続方法", count: 0
+  end
+
+  test "index displays all knowledges with blank search query" do
+    Knowledge.create!(
+      title: "経費精算の方法",
+      content: "経費精算はシステムから申請してください。",
+      category: "経費"
+    )
+    Knowledge.create!(
+      title: "VPNへの接続方法",
+      content: "VPNクライアントを起動してください。",
+      category: "IT"
+    )
+
+    get knowledges_url(q: "")
+
+    assert_response :success
+    assert_select "h2", text: "経費精算の方法"
+    assert_select "h2", text: "VPNへの接続方法"
+  end
+
   test "should show knowledge" do
     knowledge = Knowledge.create!(
       title: "VPNへの接続方法",

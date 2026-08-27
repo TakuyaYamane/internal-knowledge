@@ -1,6 +1,7 @@
 class KnowledgesController < ApplicationController
   def index
-    @knowledges = Knowledge.order(created_at: :desc)
+    @query = params[:q]
+    @knowledges = Knowledge.search(@query)
   end
 
   def show
