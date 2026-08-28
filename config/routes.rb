@@ -13,5 +13,5 @@ Rails.application.routes.draw do
   resources :questions, only: %i[index new]
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "questions#index"
 end
