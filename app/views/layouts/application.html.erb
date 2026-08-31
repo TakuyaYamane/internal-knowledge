@@ -32,6 +32,13 @@
           <%= link_to "AIに質問", new_question_path %>
           <%= link_to "ナレッジ一覧", knowledges_path %>
           <%= link_to "ナレッジ登録", new_knowledge_path %>
+
+          <% if authenticated? %>
+            <%= button_to "ログアウト",
+                  session_path,
+                  method: :delete,
+                  class: "app-nav__logout" %>
+          <% end %>
         </nav>
       </div>
     </header>

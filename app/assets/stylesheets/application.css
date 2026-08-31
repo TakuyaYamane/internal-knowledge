@@ -678,3 +678,29 @@ input[type="submit"].button-primary:hover {
   outline: 3px solid rgba(37, 99, 235, 0.25);
   outline-offset: 2px;
 }
+
+/* Header logout */
+.app-nav form {
+  margin: 0;
+}
+
+.app-nav__logout {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.app-nav__logout:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.app-nav__logout:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
