@@ -1,11 +1,36 @@
-<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
-<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <p class="login-label">ADMIN</p>
+      <h1>管理者ログイン</h1>
+      <p class="login-description">
+        ナレッジの登録・編集を行うにはログインしてください。
+      </p>
+    </div>
 
-<%= form_with url: session_path do |form| %>
-  <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email_address] %><br>
-  <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Enter your password", maxlength: 72 %><br>
-  <%= form.submit "Sign in" %>
-<% end %>
-<br>
+    <%= form_with url: session_path, class: "login-form" do |form| %>
+      <div class="login-field">
+        <%= form.label :email_address, "メールアドレス" %>
+        <%= form.email_field :email_address,
+              required: true,
+              autofocus: true,
+              autocomplete: "username",
+              placeholder: "admin@example.com" %>
+      </div>
 
-<%= link_to "Forgot password?", new_password_path %>
+      <div class="login-field">
+        <%= form.label :password, "パスワード" %>
+        <%= form.password_field :password,
+              required: true,
+              autocomplete: "current-password",
+              placeholder: "パスワードを入力" %>
+      </div>
+
+      <%= form.submit "ログイン", class: "login-button" %>
+    <% end %>
+
+    <div class="login-footer">
+      <%= link_to "AI質問画面へ戻る", root_path %>
+    </div>
+  </div>
+</div>

@@ -41,7 +41,19 @@
         <p class="flash-message"><%= message %></p>
       <% end %>
 
-      <%= yield %>
+    <% if notice %>
+     <div class="flash-message flash-notice">
+      <%= notice %>
+     </div>
+    <% end %>
+
+    <% if alert %>
+     <div class="flash-message flash-alert">
+      <%= alert %>
+     </div>
+    <% end %>
+ 
+    <%= yield %>
     </main>
   </body>
 </html>
