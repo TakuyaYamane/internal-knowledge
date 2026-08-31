@@ -1,5 +1,7 @@
 class KnowledgesController < ApplicationController
-  def index
+ allow_unauthenticated_access only: %i[index show] 
+
+ def index
     @query = params[:q]
     @knowledges = Knowledge.search(@query)
   end

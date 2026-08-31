@@ -104,6 +104,8 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get new" do
+    sign_in_as users(:one)
+
     get new_knowledge_url
 
     assert_response :success
@@ -115,6 +117,7 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should create knowledge" do
+    sign_in_as users(:one)
     with_knowledge_embedding_sync(true) do
       assert_difference("Knowledge.count", 1) do
         post knowledges_url, params: {
@@ -135,6 +138,7 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should sync chunks and embeddings when creating knowledge" do
+    sign_in_as users(:one)
     synced_knowledge_ids = []
 
     with_knowledge_embedding_sync(->(knowledge) {
@@ -155,7 +159,8 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should keep create success when embedding sync fails" do
-    with_knowledge_embedding_sync(false) do
+      sign_in_as users(:one)
+      with_knowledge_embedding_sync(false) do
       assert_difference("Knowledge.count", 1) do
         post knowledges_url, params: {
           knowledge: {
@@ -171,7 +176,9 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should render new with errors when validation fails" do
-    assert_no_difference("Knowledge.count") do
+   
+      sign_in_as users(:one)
+      assert_no_difference("Knowledge.count") do
       post knowledges_url, params: {
         knowledge: {
           title: "",
@@ -190,7 +197,8 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get edit" do
-    knowledge = Knowledge.create!(
+      sign_in_as users(:one)
+      knowledge = Knowledge.create!(
       title: "経費精算の方法",
       content: "経費精算はシステムから申請してください。",
       category: "経費"
@@ -207,7 +215,8 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update knowledge" do
-    knowledge = Knowledge.create!(
+   sign_in_as users(:one)
+   knowledge = Knowledge.create!(
       title: "経費精算の方法",
       content: "経費精算はシステムから申請してください。",
       category: "経費"
@@ -236,7 +245,9 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should resync chunks and embeddings when content changes" do
-    knowledge = Knowledge.create!(
+   
+      sign_in_as users(:one)
+      knowledge = Knowledge.create!(
       title: "経費精算の方法",
       content: "経費精算はシステムから申請してください。",
       category: "経費"
@@ -261,7 +272,8 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should not resync when only title changes" do
-    knowledge = Knowledge.create!(
+      sign_in_as users(:one)
+      knowledge = Knowledge.create!(
       title: "経費精算の方法",
       content: "経費精算はシステムから申請してください。",
       category: "経費"
@@ -286,7 +298,8 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should render edit with errors when update validation fails" do
-    knowledge = Knowledge.create!(
+      sign_in_as users(:one)
+      knowledge = Knowledge.create!(
       title: "経費精算の方法",
       content: "経費精算はシステムから申請してください。",
       category: "経費"
@@ -314,7 +327,8 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should destroy knowledge and redirect to index" do
-    knowledge = Knowledge.create!(
+      sign_in_as users(:one)
+      knowledge = Knowledge.create!(
       title: "VPNへの接続方法",
       content: "VPNクライアントを起動し、社員アカウントでログインしてください。",
       category: "IT"

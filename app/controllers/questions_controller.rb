@@ -1,6 +1,8 @@
 class QuestionsController < ApplicationController
   RagContext = Data.define(:title, :category, :content)
   private_constant :RagContext
+ 
+  allow_unauthenticated_access
 
   rate_limit to: 10,
            within: 1.minute,
