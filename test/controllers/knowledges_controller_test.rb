@@ -176,7 +176,6 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should render new with errors when validation fails" do
-   
       sign_in_as users(:one)
       assert_no_difference("Knowledge.count") do
       post knowledges_url, params: {
@@ -245,7 +244,6 @@ class KnowledgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should resync chunks and embeddings when content changes" do
-   
       sign_in_as users(:one)
       knowledge = Knowledge.create!(
       title: "経費精算の方法",

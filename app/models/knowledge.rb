@@ -9,18 +9,20 @@ class Knowledge < ApplicationRecord
     return order(created_at: :desc) if query.blank?
 
     terms = search_terms(query)
+
     return none.order(created_at: :desc) if terms.empty?
 
-    conditions = []
-    values = {}
+    table = arel_table
 
-    terms.each_with_index do |term, index|
-      key = :"query_#{index}"
-      values[key] = "%#{sanitize_sql_like(term)}%"
-      conditions << "(title ILIKE :#{key} OR content ILIKE :#{key} OR category ILIKE :#{key})"
-    end
+    condition = terms.map do |term|
+      pattern = "%#{sanitize_sql_like(term)}%"
 
-    where(conditions.join(" OR "), values).order(created_at: :desc)
+      table[:title].matches(pattern, nil, false)
+        .or(table[:content].matches(pattern, nil, false))
+        .or(table[:category].matches(pattern, nil, false))
+    end.reduce(&:or)
+
+    where(condition).order(created_at: :desc)
   end
 
   def self.search_terms(query)
