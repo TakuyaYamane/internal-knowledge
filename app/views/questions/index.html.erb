@@ -5,6 +5,41 @@
 
 <section class="question-summary">
   <h2>質問</h2>
+    <div class="question-examples">
+    <p class="question-examples-title">質問例</p>
+
+    <div class="question-example-list">
+      <button type="button" class="question-example-button"
+        onclick="document.getElementById('question').value = 'リモートワークは週に何日できますか？'">
+        リモートワークは週に何日できますか？
+      </button>
+
+      <button type="button" class="question-example-button"
+        onclick="document.getElementById('question').value = '有給休暇はいつまでに申請すればいいですか？'">
+        有給休暇はいつまでに申請すればいいですか？
+      </button>
+
+      <button type="button" class="question-example-button"
+        onclick="document.getElementById('question').value = '社内勉強会はいつ開催されますか？'">
+        社内勉強会はいつ開催されますか？
+      </button>
+
+      <button type="button" class="question-example-button"
+        onclick="document.getElementById('question').value = '本番環境で障害が発生したら最初に何をすればいいですか？'">
+        本番障害が発生したら最初に何をすればいいですか？
+      </button>
+
+      <button type="button" class="question-example-button"
+        onclick="document.getElementById('question').value = 'コードレビューのルールを教えてください'">
+        コードレビューのルールを教えてください
+      </button>
+
+      <button type="button" class="question-example-button"
+        onclick="document.getElementById('question').value = '金曜日に参加できる社内イベントはありますか？'">
+        金曜日に参加できる社内イベントはありますか？
+      </button>
+    </div>
+  </div>
   <%= form_with url: questions_path, method: :get, class: "question-form question-form--compact" do |form| %>
     <div class="form-group">
       <%= form.label :question, "質問" %>

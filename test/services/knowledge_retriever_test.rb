@@ -70,11 +70,11 @@ class KnowledgeRetrieverTest < ActiveSupport::TestCase
     end
 
     assert_includes results.map(&:chunk), related_chunk
-    assert results.any? { |result| result.chunk == related_chunk && result.distance > 0.45 && result.distance <= 0.50 }
+    assert results.any? { |result| result.chunk == related_chunk && result.distance > 0.45 && result.distance <= 0.60 }
   end
 
   test "excludes chunks above default threshold" do
-    create_knowledge_chunk(embedding: embedding_for(1.0, 1.75), content: "遠すぎるChunk")
+    create_knowledge_chunk(embedding: embedding_for(1.0, 2.5), content: "遠すぎるChunk")
 
     results = with_embedding_generator(embedding_for(1.0, 0.0)) do
       KnowledgeRetriever.call("家で仕事をしたい場合、どう申請すればいいですか？")

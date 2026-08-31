@@ -1,6 +1,6 @@
 class KnowledgeRetriever
   DEFAULT_TOP_K = 5
-  DEFAULT_MAX_DISTANCE = 0.50
+  DEFAULT_MAX_DISTANCE = 0.60
   Result = Data.define(:chunk, :distance)
 
   def self.call(question, top_k: DEFAULT_TOP_K, max_distance: DEFAULT_MAX_DISTANCE)

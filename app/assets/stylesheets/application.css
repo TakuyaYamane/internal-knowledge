@@ -632,3 +632,49 @@ input[type="submit"].button-primary:hover {
 .login-footer a:hover {
   text-decoration: underline;
 }
+
+/* Question examples */
+.question-examples {
+  margin: 20px 0 24px;
+}
+
+.question-examples-title {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.question-example-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.question-example-button {
+  padding: 10px 14px;
+  border: 1px solid #d8dde6;
+  border-radius: 999px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.question-example-button:hover {
+  background: #f5f7fa;
+  border-color: #aeb8c8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.question-example-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.25);
+  outline-offset: 2px;
+}

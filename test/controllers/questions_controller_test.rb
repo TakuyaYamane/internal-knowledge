@@ -26,7 +26,7 @@ class QuestionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select "h1", "質問結果"
+    assert_select "h1", "ナレッジに質問"
     assert_select "textarea[name='question']", "VPN"
     assert_select "h2", "関連するナレッジ"
     assert_select "h3 a[href='#{knowledge_path(knowledge)}']", "VPNへの接続方法"
