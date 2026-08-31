@@ -2,6 +2,11 @@ class QuestionsController < ApplicationController
   RagContext = Data.define(:title, :category, :content)
   private_constant :RagContext
 
+  rate_limit to: 10,
+           within: 1.minute,
+           only: :index,
+           if: -> { params[:question].present? }
+
   def index
     @question = params[:question].to_s
     @retrieval_results = retrieve_results
